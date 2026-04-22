@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patarrás Plaza — Plan de Gestión Ambiental | UTN IMRH-824</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --verde-oscuro: #1a3a2a;
+  --verde-medio: #2d6a4f;
+  --verde-claro: #52b788;
+  --verde-luz: #b7e4c7;
+  --tierra: #8b5e3c;
+  --arena: #f0e6d3;
+  --blanco: #fafaf8;
+  --gris-texto: #2c3e35;
+  --azul-agua: #1e6f8a;
+  --acento: #e9c46a;
+  --rojo-alerta: #d62828;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--blanco);
+  color: var(--gris-texto);
+  overflow-x: hidden;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 1000;
+  background: rgba(26,58,42,0.95);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  color: var(--verde-claro); font-size: 1.1rem; font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.nav-links { display: flex; gap: 24px; list-style: none; }
+.nav-links a {
+  color: rgba(255,255,255,0.75); text-decoration: none;
+  font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--verde-claro); }
+
+/* ===== HERO ===== */
+#hero {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #0d2218 0%, #1a3a2a 45%, #2d6a4f 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 40px 60px;
+  position: relative; overflow: hidden;
+}
+.hero-bg-circles {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-bg-circles span {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(82,183,136,0.12);
+  animation: pulse-ring 8s ease-in-out infinite;
+}
+.hero-bg-circles span:nth-child(1) { width: 600px; height: 600px; top: -150px; right: -150px; animation-delay: 0s; }
+.hero-bg-circles span:nth-child(2) { width: 400px; height: 400px; bottom: -100px; left: -80px; animation-delay: 3s; }
+.hero-bg-circles span:nth-child(3) { width: 800px; height: 800px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 1.5s; }
+@keyframes pulse-ring {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.04); }
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(82,183,136,0.2); border: 1px solid rgba(82,183,136,0.4);
+  color: var(--verde-claro); font-size: 0.72rem; letter-spacing: 0.15em;
+  text-transform: uppercase; padding: 6px 18px; border-radius: 100px;
+  margin-bottom: 28px;
+  animation: fadeDown 0.8s ease both;
+}
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.4rem, 6vw, 5rem); font-weight: 900;
+  color: #fff; line-height: 1.1; max-width: 900px;
+  animation: fadeDown 0.8s 0.15s ease both;
+}
+.hero-title em { color: var(--verde-claro); font-style: normal; }
+.hero-subtitle {
+  color: rgba(255,255,255,0.65); font-size: 1rem; max-width: 680px;
+  margin: 24px auto 0; line-height: 1.7;
+  animation: fadeDown 0.8s 0.3s ease both;
+}
+.hero-stats {
+  display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+  margin-top: 56px;
+  animation: fadeUp 0.8s 0.5s ease both;
+}
+.hero-stat {
+  text-align: center;
+  border-left: 1px solid rgba(82,183,136,0.25);
+  padding-left: 32px;
+}
+.hero-stat:first-child { border-left: none; padding-left: 0; }
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem; color: var(--acento); font-weight: 700; line-height: 1;
+}
+.hero-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; margin-top: 6px; text-transform: uppercase; }
+.scroll-indicator {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  animation: bounce 2s ease infinite;
+  color: rgba(255,255,255,0.4); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.scroll-indicator::after {
+  content: ''; width: 1px; height: 40px;
+  background: linear-gradient(to bottom, rgba(82,183,136,0.8), transparent);
+}
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== SECTION COMMON ===== */
+section { padding: 90px 40px; max-width: 1200px; margin: 0 auto; }
+.section-full { max-width: 100%; padding: 90px 0; }
+.section-tag {
+  display: inline-block; font-size: 0.68rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--verde-medio); font-weight: 600;
+  margin-bottom: 12px;
+}
+h2.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700;
+  color: var(--verde-oscuro); line-height: 1.2; margin-bottom: 16px;
+}
+h2.section-title span { color: var(--verde-medio); }
+.section-lead {
+  font-size: 1.05rem; color: #4a6355; max-width: 700px;
+  line-height: 1.8; margin-bottom: 48px;
+}
+
+/* ===== INTRO SECTION ===== */
+#intro { background: var(--blanco); }
+.intro-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;
+}
+.intro-card {
+  background: linear-gradient(135deg, #f0f7f3 0%, #e8f4ee 100%);
+  border: 1px solid rgba(45,106,79,0.12);
+  border-radius: 20px; padding: 36px; position: relative; overflow: hidden;
+}
+.intro-card::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(82,183,136,0.15), transparent);
+}
+.intro-card h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.3rem;
+  color: var(--verde-oscuro); margin-bottom: 16px;
+}
+.intro-card p { font-size: 0.92rem; line-height: 1.8; color: #4a6355; }
+.intro-highlight {
+  background: var(--verde-oscuro); border-radius: 20px; padding: 36px;
+  color: #fff;
+}
+.intro-highlight h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 20px; color: var(--verde-luz); }
+.intro-highlight ul { list-style: none; }
+.intro-highlight ul li {
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.9rem; line-height: 1.6;
+  display: flex; gap: 12px;
+}
+.intro-highlight ul li::before { content: '▸'; color: var(--verde-claro); flex-shrink: 0; }
+
+/* ===== OBJETIVOS ===== */
+#objetivos { background: #f4f9f6; }
+.obj-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.obj-card {
+  background: #fff; border-radius: 16px; padding: 32px 28px;
+  border-top: 4px solid var(--verde-claro);
+  box-shadow: 0 4px 24px rgba(45,106,79,0.08);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.obj-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(45,106,79,0.15); }
+.obj-num {
+  font-family: 'Playfair Display', serif; font-size: 3rem;
+  color: rgba(82,183,136,0.2); font-weight: 900; line-height: 1;
+  margin-bottom: 12px;
+}
+.obj-card h4 { font-size: 0.92rem; font-weight: 600; color: var(--verde-oscuro); margin-bottom: 10px; }
+.obj-card p { font-size: 0.86rem; color: #5a7366; line-height: 1.7; }
+.obj-general {
+  background: var(--verde-oscuro); color: #fff; border-top-color: var(--acento);
+  grid-column: 1 / -1;
+}
+.obj-general .obj-num { color: rgba(233,196,106,0.25); }
+.obj-general h4 { color: var(--acento); font-size: 1rem; }
+.obj-general p { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
+
+/* ===== PROYECTO CIFRAS ===== */
+#cifras { background: var(--verde-oscuro); color: #fff; }
+#cifras .section-tag { color: var(--verde-claro); }
+#cifras h2.section-title { color: #fff; }
+#cifras h2.section-title span { color: var(--acento); }
+#cifras .section-lead { color: rgba(255,255,255,0.6); }
+.cifras-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.cifra-card {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 28px 24px; text-align: center;
+  transition: background 0.25s;
+}
+.cifra-card:hover { background: rgba(255,255,255,0.12); }
+.cifra-icon { font-size: 2rem; margin-bottom: 12px; }
+.cifra-num {
+  font-family: 'Playfair Display', serif; font-size: 2.2rem;
+  color: var(--acento); font-weight: 700; line-height: 1;
+}
+.cifra-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 8px; letter-spacing: 0.05em; }
+
+/* ===== UBICACION ===== */
+#ubicacion { background: var(--blanco); }
+.ubic-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 60px; align-items: start; }
+.ubic-table { width: 100%; border-collapse: collapse; }
+.ubic-table tr { border-bottom: 1px solid rgba(45,106,79,0.1); }
+.ubic-table td { padding: 12px 0; font-size: 0.88rem; }
+.ubic-table td:first-child { color: #7a9485; font-weight: 500; width: 45%; }
+.ubic-table td:last-child { color: var(--verde-oscuro); font-weight: 600; }
+.ubic-map-box {
+  background: linear-gradient(160deg, #1a3a2a, #2d6a4f);
+  border-radius: 20px; padding: 40px; color: #fff;
+  min-height: 340px; display: flex; flex-direction: column; justify-content: space-between;
+}
+.ubic-map-box h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--verde-luz); margin-bottom: 20px; }
+.ubic-ai-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+.ubic-ai-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(82,183,136,0.25); display: grid; place-items: center; font-size: 0.9rem; flex-shrink: 0; }
+.ubic-ai-text { font-size: 0.85rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
+.alerta-box {
+  background: rgba(214,40,40,0.12); border: 1px solid rgba(214,40,40,0.3);
+  border-radius: 12px; padding: 16px 20px; margin-top: 20px;
+  font-size: 0.85rem; color: #ffb4b4; display: flex; gap: 10px; align-items: flex-start;
+}
+
+/* ===== POBLACION ===== */
+#poblacion { background: #f4f9f6; }
+.pop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.pop-table { width: 100%; border-collapse: collapse; }
+.pop-table th {
+  background: var(--verde-oscuro); color: #fff; text-align: left;
+  padding: 12px 16px; font-size: 0.78rem; letter-spacing: 0.08em; font-weight: 500;
+}
+.pop-table td { padding: 11px 16px; font-size: 0.88rem; border-bottom: 1px solid rgba(45,106,79,0.08); }
+.pop-table tr:nth-child(even) td { background: rgba(82,183,136,0.06); }
+.pop-table td:last-child { font-weight: 600; color: var(--verde-medio); }
+
+/* ===== SERVICIOS ===== */
+#servicios { background: var(--blanco); }
+.serv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.serv-card {
+  background: #f8fbf9; border: 1px solid rgba(45,106,79,0.12);
+  border-radius: 16px; padding: 28px;
+}
+.serv-card h4 {
+  font-size: 0.92rem; font-weight: 700; color: var(--verde-oscuro);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.serv-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--verde-claro); display: inline-block;
+}
+.serv-list { list-style: none; }
+.serv-list li {
+  font-size: 0.85rem; line-height: 1.6; padding: 8px 0;
+  border-bottom: 1px solid rgba(45,106,79,0.07);
+  display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px;
+}
+.serv-list li span:nth-child(2) {
+  font-weight: 600;
+  color: var(--verde-medio);
+}
+
+/* ===== ENCUESTA ===== */
+#encuesta { background: var(--verde-oscuro); color: #fff; }
+#encuesta .section-tag { color: var(--verde-claro); }
+#encuesta h2.section-title { color: #fff; }
+#encuesta h2.section-title span { color: var(--acento); }
+#encuesta .section-lead { color: rgba(255,255,255,0.65); }
+.enc-charts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+}
+.enc-chart-box {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px; padding: 28px;
+}
+.enc-chart-box h4 {
+  font-size: 0.85rem; color: var(--verde-luz); margin-bottom: 20px;
+  font-weight: 500; line-height: 1.5;
+}
+.enc-big-stat {
+  background: rgba(233,196,106,0.12); border: 1px solid rgba(233,196,106,0.3);
+  border-radius: 16px; padding: 28px 32px; text-align: center; margin-bottom: 32px;
+}
+.enc-big-stat .big-num {
+  font-family: 'Playfair Display', serif; font-size: 4rem;
+  color: var(--acento); font-weight: 900; line-height: 1;
+}
+.enc-big-stat p { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 8px; }
+.enc-highlight-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 24px;
+}
+.enc-hl-card {
+  background: rgba(255,255,255,0.06); border-radius: 12px; padding: 20px 16px; text-align: center;
+}
+.enc-hl-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--verde-claro); font-weight: 700; }
+.enc-hl-text { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 6px; line-height: 1.4; }
+
+/* ===== IMPACTOS ===== */
+#impactos { background: var(--blanco); }
+.imp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+.imp-card {
+  border-radius: 16px; padding: 28px; position: relative; overflow: hidden;
+}
+.imp-neg { background: #fff5f5; border: 1px solid rgba(214,40,40,0.15); }
+.imp-pos { background: #f0faf4; border: 1px solid rgba(45,106,79,0.15); }
+.imp-label {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 16px;
+}
+.imp-neg .imp-label { color: var(--rojo-alerta); }
+.imp-pos .imp-label { color: var(--verde-medio); }
+.impact-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.impact-item:last-child { border-bottom: none; }
+.impact-bar {
+  flex: 1; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; overflow: hidden;
+}
+.impact-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.neg-fill { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+.pos-fill { background: linear-gradient(90deg, #52b788, #2d6a4f); }
+.impact-name { font-size: 0.85rem; color: var(--gris-texto); width: 220px; line-height: 1.4; }
+.impact-score {
+  font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
+  width: 36px; text-align: right;
+}
+.neg-score { color: var(--rojo-alerta); }
+.pos-score { color: var(--verde-medio); }
+
+/* ===== PGA ===== */
+#pga { background: #f4f9f6; }
+.pga-table-wrap { overflow-x: auto; border-radius: 16px; box-shadow: 0 4px 30px rgba(45,106,79,0.1); }
+.pga-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.pga-table thead tr th {
+  background: var(--verde-oscuro); color: #fff;
+  padding: 14px 16px; font-size: 0.78rem; letter-spacing: 0.06em;
+  text-align: left; font-weight: 500;
+}
+.pga-table tbody tr { border-bottom: 1px solid rgba(45,106,79,0.08); }
+.pga-table tbody tr:nth-child(even) td { background: rgba(82,183,136,0.04); }
+.pga-table td { padding: 13px 16px; font-size: 0.82rem; color: var(--gris-texto); vertical-align: top; line-height: 1.6; }
+.pga-table td:first-child { font-weight: 600; color: var(--verde-oscuro); }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 100px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
+}
+.badge-alt { background: rgba(214,40,40,0.12); color: var(--rojo-alerta); }
+.badge-mod { background: rgba(233,196,106,0.2); color: #b08010; }
+.badge-res { background: rgba(82,183,136,0.15); color: var(--verde-medio); }
+
+/* ===== COSTOS ===== */
+#costos { background: var(--blanco); }
+.cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.cost-table { width: 100%; border-collapse: collapse; }
+.cost-table tr { border-bottom: 1px solid rgba(45,106,79,0.08); }
+.cost-table td { padding: 12px 0; font-size: 0.88rem; }
+.cost-table td:first-child { color: #6a8475; }
+.cost-table td:last-child { font-weight: 700; color: var(--verde-oscuro); text-align: right; }
+.cost-table tr.total-row td { border-top: 2px solid var(--verde-claro); color: var(--verde-oscuro); font-size: 1rem; padding-top: 16px; }
+.cost-total-box {
+  background: var(--verde-oscuro); border-radius: 20px; padding: 36px;
+  color: #fff; text-align: center;
+}
+.cost-total-box h4 { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--verde-luz); margin-bottom: 12px; }
+.cost-total-num {
+  font-family: 'Playfair Display', serif; font-size: 2.6rem;
+  color: var(--acento); font-weight: 900; line-height: 1.1;
+}
+.cost-total-sub { font-size: 0.85rem; color: rgba(255,255,255,0.55); margin-top: 8px; }
+.cost-pct {
+  font-size: 4rem; font-family: 'Playfair Display', serif;
+  color: rgba(82,183,136,0.2); font-weight: 900; margin: 20px 0 4px;
+}
+.cost-pct-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+.regencia-box {
+  background: rgba(82,183,136,0.12); border: 1px solid rgba(82,183,136,0.25);
+  border-radius: 16px; padding: 24px; margin-top: 24px;
+}
+.regencia-box h4 { color: var(--verde-claro); font-size: 0.85rem; margin-bottom: 12px; }
+.timeline-bar {
+  display: flex; border-radius: 8px; overflow: hidden; height: 28px; margin-top: 12px;
+}
+.tl-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 600; color: #fff; letter-spacing: 0.05em;
+}
+.tl-demol { background: #e67e22; flex: 3; }
+.tl-const { background: var(--verde-medio); flex: 18; }
+.tl-oper { background: var(--azul-agua); flex: 12; }
+
+/* ===== CONCLUSIONES ===== */
+#conclusiones { background: #f4f9f6; }
+.concl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.concl-list { list-style: none; }
+.concl-list li {
+  padding: 16px 0; border-bottom: 1px solid rgba(45,106,79,0.1);
+  font-size: 0.9rem; line-height: 1.7; display: flex; gap: 14px; color: #3a5544;
+}
+.concl-list li::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--verde-claro); flex-shrink: 0; margin-top: 8px;
+}
+.recom-list li::before { background: var(--acento); }
+.concl-box {
+  background: #fff; border-radius: 16px; padding: 32px;
+  box-shadow: 0 2px 20px rgba(45,106,79,0.08);
+}
+.concl-box h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.2rem;
+  color: var(--verde-oscuro); margin-bottom: 20px;
+  padding-bottom: 12px; border-bottom: 2px solid rgba(82,183,136,0.25);
+}
+
+/* ===== REFERENCIAS ===== */
+#referencias { background: var(--blanco); }
+.ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ref-item {
+  background: #f8fbf9; border-left: 3px solid var(--verde-claro);
+  padding: 14px 18px; border-radius: 0 10px 10px 0;
+  font-size: 0.82rem; line-height: 1.7; color: #4a6355;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--verde-oscuro); color: rgba(255,255,255,0.6);
+  text-align: center; padding: 48px 40px; font-size: 0.82rem;
+}
+footer strong { color: var(--verde-claro); }
+footer .footer-names { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #fff; margin-bottom: 8px; }
+
+/* ===== REVEAL ANIMATIONS ===== */
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width: 900px) {
+  .intro-grid, .cifras-grid, .obj-grid, .ubic-grid, .enc-charts,
+  .imp-row, .pop-grid, .serv-grid, .concl-grid, .ref-grid, .cost-grid {
+    grid-template-columns: 1fr;
+  }
+  .cifras-grid { grid-template-columns: 1fr 1fr; }
+  .obj-general { grid-column: 1; }
+  .nav-links { display: none; }
+  .enc-highlight-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">🌿 Patarrás Plaza</span>
+  <ul class="nav-links">
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#objetivos">Objetivos</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+    <li><a href="#encuesta">Encuesta</a></li>
+    <li><a href="#impactos">Impactos</a></li>
+    <li><a href="#pga">PGA</a></li>
+    <li><a href="#costos">Costos</a></li>
+    <li><a href="#conclusiones">Conclusiones</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-bg-circles">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="hero-tag">UTN · IMRH-824 · EIA II · I Cuatrimestre 2026</div>
+  <h1 class="hero-title">Centro Comercial<br><em>Patarrás Plaza</em></h1>
+  <p class="hero-subtitle">Pronóstico del Plan de Gestión Ambiental para un centro comercial de 3 niveles en el Distrito de Patarrás, Cantón de Desamparados, San José, Costa Rica.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">3.500</div>
+      <div class="hero-stat-label">m² de lote</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">7.200</div>
+      <div class="hero-stat-label">m² construidos</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">₡3.200M</div>
+      <div class="hero-stat-label">Inversión estimada</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">B2</div>
+      <div class="hero-stat-label">Categoría SETENA</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">33</div>
+      <div class="hero-stat-label">meses de regencia</div>
+    </div>
+  </div>
+  <div class="scroll-indicator">Explorar</div>
+</div>
+
+<!-- INTRO -->
+<section id="intro" class="reveal">
+  <div class="section-tag">Introducción</div>
+  <h2 class="section-title">Un desarrollo que la comunidad <span>necesita</span></h2>
+  <p class="section-lead">Patarrás es un distrito en expansión cuya oferta comercial local es insuficiente. El 87% de sus vecinos debe salir del distrito cada semana para realizar compras básicas. Este proyecto analiza la viabilidad ambiental de un centro comercial que atienda esa demanda.</p>
+  <div class="intro-grid">
+    <div>
+      <div class="intro-card" style="margin-bottom:24px">
+        <h3>🌍 Contexto Ambiental</h3>
+        <p>El distrito de Patarrás se ubica sobre la zona de recarga de los acuíferos del Valle Central, clasificados por el SENARA con vulnerabilidad <strong>media</strong>. La introducción de superficies impermeables afecta el ciclo hidrológico local, lo que convierte la gestión del drenaje y las aguas residuales en el eje central del P-PGA.</p>
+      </div>
+      <div class="intro-card">
+        <h3>📋 Instrumento de Evaluación</h3>
+        <p>Con una Significancia del Impacto Ambiental (SIA) estimada en <strong>180 puntos</strong>, el proyecto clasifica para el <strong>Formulario D1 + Declaración Jurada de Compromisos Ambientales (DJCA)</strong> ante la SETENA, conforme al Decreto Ejecutivo N° 43898-MINAE-MOPT-MAG-MEIC.</p>
+      </div>
+    </div>
+    <div class="intro-highlight">
+      <h3>El Proyecto en Síntesis</h3>
+      <ul>
+        <li>3 niveles · 1 supermercado · 8 locales comerciales · Plaza de comidas</li>
+        <li>45 espacios de estacionamiento (zacate bloque semipermeable)</li>
+        <li>Cuarto de máquinas · Cuarto eléctrico · Planta emergencia</li>
+        <li>Sistema de tratamiento de aguas residuales in situ (sin alcantarillado municipal en Patarrás)</li>
+        <li>Sistema de captación y drenaje de aguas pluviales</li>
+        <li>Sistema de detección y supresión de incendios</li>
+        <li>Desarrollador ficticio: Desarrollos Comerciales del Sur S.A.</li>
+        <li>Consultor ambiental con registro SETENA activo</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- OBJETIVOS -->
+<section id="objetivos" class="reveal">
+  <div class="section-tag">Objetivos</div>
+  <h2 class="section-title">¿Qué buscamos <span>demostrar?</span></h2>
+  <p class="section-lead">Este trabajo tiene un objetivo general y seis objetivos específicos que guían el análisis técnico y social del proyecto.</p>
+  <div class="obj-grid">
+    <div class="obj-card obj-general">
+      <div class="obj-num">OG</div>
+      <h4>Objetivo General</h4>
+      <p>Desarrollar el Pronóstico del Plan de Gestión Ambiental para el Centro Comercial Patarrás Plaza, en el Distrito de Patarrás, cantón de Desamparados, mediante el análisis técnico de sus impactos ambientales y el diseño de medidas de mitigación, compensación y monitoreo, conforme al Decreto N° 43898-MINAE-MOPT-MAG-MEIC.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">01</div>
+      <h4>Caracterizar el área de influencia</h4>
+      <p>Diagnóstico de los factores bióticos, abióticos y socioeconómicos del Distrito de Patarrás para establecer la línea base ambiental.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">02</div>
+      <h4>Describir el proyecto técnicamente</h4>
+      <p>Documentar los componentes operativos, sistemas de infraestructura y características constructivas del centro comercial.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">03</div>
+      <h4>Identificar y valorar impactos</h4>
+      <p>Usar matrices de evaluación (Matriz de Leopold) para analizar las etapas de construcción y operación conforme al Decreto N° 43898.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">04</div>
+      <h4>Diseñar el cuadro P-PGA</h4>
+      <p>Medidas de mitigación, compensación y monitoreo por cada impacto identificado, con responsables, frecuencias y costos.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">05</div>
+      <h4>Estimar costos de viabilidad</h4>
+      <p>Calcular todos los costos para obtener la VLA: estudios técnicos, honorarios, trámites municipales, SETENA y regencia ambiental.</p>
+    </div>
+    <div class="obj-card">
+      <div class="obj-num">06</div>
+      <h4>Encuesta de percepción social</h4>
+      <p>Aplicar una encuesta a 30 vecinos del área de influencia directa para incorporar la perspectiva comunitaria en el análisis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CIFRAS -->
+<section id="cifras" class="reveal">
+  <div class="section-tag">El Proyecto</div>
+  <h2 class="section-title">El proyecto en <span>números</span></h2>
+  <p class="section-lead">Centro Comercial Patarrás Plaza — Distrito Patarrás, Cantón Desamparados, San José, Costa Rica.</p>
+  <div class="cifras-grid">
+    <div class="cifra-card"><div class="cifra-icon">🏗️</div><div class="cifra-num">3</div><div class="cifra-label">Niveles de construcción</div></div>
+    <div class="cifra-card"><div class="cifra-icon">📐</div><div class="cifra-num">3.500 m²</div><div class="cifra-label">Área del lote</div></div>
+    <div class="cifra-card"><div class="cifra-icon">🏢</div><div class="cifra-num">7.200 m²</div><div class="cifra-label">Área construida total</div></div>
+    <div class="cifra-card"><div class="cifra-icon">🛒</div><div class="cifra-num">1 + 8</div><div class="cifra-label">Supermercado + locales comerciales</div></div>
+    <div class="cifra-card"><div class="cifra-icon">🍽️</div><div class="cifra-num">3</div><div class="cifra-label">Módulos de restaurante (plaza comidas)</div></div>
+    <div class="cifra-card"><div class="cifra-icon">🅿️</div><div class="cifra-num">45</div><div class="cifra-label">Espacios de estacionamiento</div></div>
+    <div class="cifra-card"><div class="cifra-icon">💰</div><div class="cifra-num">₡3.200M</div><div class="cifra-label">Inversión estimada total</div></div>
+    <div class="cifra-card"><div class="cifra-icon">🌿</div><div class="cifra-num">60%</div><div class="cifra-label">Estacionamientos con pavimento semipermeable</div></div>
+  </div>
+</section>
+
+<!-- UBICACION -->
+<section id="ubicacion" class="reveal">
+  <div class="section-tag">Ubicación Geográfica</div>
+  <h2 class="section-title">Distrito de Patarrás, <span>Desamparados</span></h2>
+  <p class="section-lead">Zona periférica del cantón de Desamparados en proceso de consolidación urbana, con cobertura de suelo tipo pastos y herbazales, sobre la zona de recarga acuífera del Valle Central.</p>
+  <div class="ubic-grid">
+    <div>
+      <table class="ubic-table">
+        <tr><td>Provincia</td><td>San José</td></tr>
+        <tr><td>Cantón</td><td>Desamparados (N° 08)</td></tr>
+        <tr><td>Distrito</td><td>Patarrás (N° 09)</td></tr>
+        <tr><td>Latitud CRTM05</td><td>1.087.450</td></tr>
+        <tr><td>Longitud CRTM05</td><td>488.920</td></tr>
+        <tr><td>Área del lote</td><td>3.500 m²</td></tr>
+        <tr><td>Cobertura SNIT 2021</td><td>Pastos / Herbazales</td></tr>
+        <tr><td>Vulnerabilidad acuífera</td><td>Media (SENARA)</td></tr>
+        <tr><td>AID (influencia directa)</td><td>Radio 500 m</td></tr>
+        <tr><td>AII (influencia indirecta)</td><td>Radio 2.000 m</td></tr>
+        <tr><td>Clasificación CIIU</td><td>4100.0.00 / 4711.0.00</td></tr>
+        <tr><td>Categoría IAP</td><td>B2 — SIA ≈ 180 pts</td></tr>
+      </table>
+    </div>
+    <div class="ubic-map-box">
+      <h3>🗺️ Entorno del Sitio Propuesto</h3>
+      <div class="ubic-ai-row"><div class="ubic-ai-icon">⬆️</div><div class="ubic-ai-text"><strong>Norte:</strong> Uso comercial-residencial · Carretera principal del distrito de Patarrás</div></div>
+      <div class="ubic-ai-row"><div class="ubic-ai-icon">⬇️</div><div class="ubic-ai-text"><strong>Sur:</strong> Residencial de baja densidad · Lotes sin construcción</div></div>
+      <div class="ubic-ai-row"><div class="ubic-ai-icon">➡️</div><div class="ubic-ai-text"><strong>Este:</strong> Pastos con árboles · Microcuenca del Río Patarrás a ≈ 250 m</div></div>
+      <div class="ubic-ai-row"><div class="ubic-ai-icon">⬅️</div><div class="ubic-ai-text"><strong>Oeste:</strong> Barrio residencial consolidado · Algunos comercios en planta baja</div></div>
+      <div class="alerta-box">⚠️ <div>Proximidad al <strong>Río Patarrás (≈250 m)</strong>. Debe verificarse la zona de protección fluvial de 15 m de ribera conforme a la Ley N° 7554 y el Reglamento de Zonas de Protección.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- POBLACION -->
+<section id="poblacion" class="reveal">
+  <div class="section-tag">Características de la Población · INEC</div>
+  <h2 class="section-title">El Distrito de <span>Patarrás</span> en datos</h2>
+  <p class="section-lead">Datos del Censo Nacional de Población y Vivienda 2011 (INEC), con proyecciones al 2024.</p>
+  <div class="pop-grid">
+    <div>
+      <table class="pop-table">
+        <thead><tr><th>Indicador Demográfico</th><th>Dato</th></tr></thead>
+        <tbody>
+          <tr><td>Población 2024 (proyección)</td><td>≈ 9.500 – 10.200 hab</td></tr>
+          <tr><td>Población Censo 2011</td><td>7.892 habitantes</td></tr>
+          <tr><td>Total viviendas</td><td>2.156 ocupadas</td></tr>
+          <tr><td>Área del distrito</td><td>42,6 km²</td></tr>
+          <tr><td>Densidad poblacional</td><td>≈ 185 hab/km²</td></tr>
+          <tr><td>Jefatura femenina</td><td>32,4% de hogares</td></tr>
+          <tr><td>Personas por hogar</td><td>3,7 promedio</td></tr>
+          <tr><td>Escolaridad media</td><td>7,2 años</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <table class="pop-table">
+        <thead><tr><th>Indicador Económico y Social</th><th>Dato</th></tr></thead>
+        <tbody>
+          <tr><td>Tasa de participación laboral</td><td>≈ 58%</td></tr>
+          <tr><td>Desempleo abierto (ENAHO 2023)</td><td>12 – 14%</td></tr>
+          <tr><td>Hogares en pobreza</td><td>≈ 18 – 22%</td></tr>
+          <tr><td>IDS MIDEPLAN (cantón)</td><td>Medio-bajo</td></tr>
+          <tr><td>Actividades económicas principales</td><td>Comercio, horticultura, construcción</td></tr>
+          <tr><td>Acceso a servicios financieros</td><td>Limitado (banco más cercano: centro Desamparados)</td></tr>
+          <tr><td>Escuela primaria en AID</td><td>Sí (< 800 m)</td></tr>
+          <tr><td>EBAIS en el distrito</td><td>Sí (CCSS)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section id="servicios" class="reveal">
+  <div class="section-tag">Servicios Básicos e Infraestructura</div>
+  <h2 class="section-title">Disponibilidad de <span>servicios</span></h2>
+  <p class="section-lead">El proyecto requiere confirmar la disponibilidad de servicios básicos con las instituciones competentes. Se identifica una limitante crítica en el sistema de aguas residuales.</p>
+  <div class="serv-grid">
+    <div class="serv-card">
+      <h4><span class="serv-dot"></span> Servicios Básicos</h4>
+      <ul class="serv-list">
+        <li><span>Agua potable</span><span>✅ Disponible</span><span>ASADA Patarrás / AyA</span></li>
+        <li><span>Energía eléctrica</span><span>✅ Disponible</span><span>ICE / CNFL (acometida trifásica)</span></li>
+        <li><span>Recolección residuos</span><span>✅ Disponible</span><span>Municipalidad de Desamparados</span></li>
+        <li><span>Telecomunicaciones</span><span>✅ Disponible</span><span>Kölbi, Movistar, Claro</span></li>
+        <li><span>Alcantarillado pluvial</span><span>⚠️ Parcial</span><span>Cunetas viales + autorización municipal</span></li>
+        <li><span>Alcantarillado sanitario</span><span>❌ No existe</span><span>Requiere STAR in situ — ₡18–25M adicionales</span></li>
+      </ul>
+    </div>
+    <div class="serv-card">
+      <h4><span class="serv-dot" style="background:#e67e22"></span> Servicios de Emergencia</h4>
+      <ul class="serv-list">
+        <li><span>🚒 Bomberos</span><span>15-20 min</span><span>Estación Desamparados (≈ 8 km)</span></li>
+        <li><span>🚑 Cruz Roja</span><span>15-25 min</span><span>Delegación Desamparados</span></li>
+        <li><span>👮 Policía MSP</span><span>15-20 min</span><span>Delegación Desamparados (≈ 8 km)</span></li>
+        <li><span>🏥 EBAIS</span><span>Inmediato</span><span>EBAIS Patarrás (< 500 m)</span></li>
+        <li><span>🏥 Hospital</span><span>20-25 min</span><span>H. Marcial Rodríguez (CCSS, ≈ 10 km)</span></li>
+        <li><span>📞 Sistema 9-1-1</span><span>Disponible</span><span>Cobertura total en el distrito</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ENCUESTA -->
+<section id="encuesta" class="reveal" style="background:var(--verde-oscuro);max-width:100%;padding:90px 40px">
+  <div style="max-width:1200px;margin:0 auto">
+  <div class="section-tag">Encuesta Social</div>
+  <h2 class="section-title">La <span>comunidad</span> habla</h2>
+  <p class="section-lead">30 vecinos del Área de Influencia Directa (radio 500 m del sitio propuesto) fueron encuestados en marzo de 2026.</p>
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:32px;margin-bottom:32px">
+    <div>
+      <div class="enc-big-stat">
+        <div class="big-num">87%</div>
+        <p>sale del distrito cada semana para hacer compras en un supermercado</p>
+      </div>
+      <div class="enc-big-stat" style="background:rgba(82,183,136,0.12);border-color:rgba(82,183,136,0.3)">
+        <div class="big-num" style="color:var(--verde-claro)">84%</div>
+        <p>está <strong style="color:#fff">de acuerdo</strong> con la construcción del centro comercial</p>
+      </div>
+      <div class="enc-big-stat" style="background:rgba(30,111,138,0.15);border-color:rgba(30,111,138,0.3)">
+        <div class="big-num" style="color:#5dbbda">70%</div>
+        <p>dispuesto a participar en el <strong style="color:#fff">Comité de Vigilancia Ambiental</strong></p>
+      </div>
+    </div>
+    <div class="enc-charts" style="grid-template-columns:1fr 1fr">
+      <div class="enc-chart-box">
+        <h4>Servicios más demandados en el distrito (%)</h4>
+        <canvas id="chartDemanda" height="200"></canvas>
+      </div>
+      <div class="enc-chart-box">
+        <h4>Principales preocupaciones ambientales (%)</h4>
+        <canvas id="chartPreocupaciones" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- IMPACTOS -->
+<section id="impactos" class="reveal">
+  <div class="section-tag">Evaluación de Impactos · Matriz de Leopold</div>
+  <h2 class="section-title">Impactos <span>identificados</span></h2>
+  <p class="section-lead">Análisis de las etapas de construcción y operación. Los impactos negativos son mayoritariamente temporales y mitigables; los positivos operativos son permanentes.</p>
+  <div class="imp-row">
+    <div class="imp-card imp-neg">
+      <div class="imp-label">🔴 Impactos Negativos — Etapa Constructiva</div>
+      <div class="impact-item"><div class="impact-name">Polvo y partículas (demolición)</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:80%"></div></div><div class="impact-score neg-score">-4</div></div>
+      <div class="impact-item"><div class="impact-name">Ruido y vibraciones</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:80%"></div></div><div class="impact-score neg-score">-4</div></div>
+      <div class="impact-item"><div class="impact-name">Generación de escombros</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:80%"></div></div><div class="impact-score neg-score">-4</div></div>
+      <div class="impact-item"><div class="impact-name">Erosión del suelo</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:60%"></div></div><div class="impact-score neg-score">-3</div></div>
+      <div class="impact-item"><div class="impact-name">Impermeabilización del suelo</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:60%"></div></div><div class="impact-score neg-score">-3</div></div>
+    </div>
+    <div class="imp-card imp-neg">
+      <div class="imp-label">🔴 Impactos Negativos — Etapa Operativa</div>
+      <div class="impact-item"><div class="impact-name">Aguas residuales con grasas (restaurante)</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:80%"></div></div><div class="impact-score neg-score">-4</div></div>
+      <div class="impact-item"><div class="impact-name">Residuos sólidos (supermercado)</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:60%"></div></div><div class="impact-score neg-score">-3</div></div>
+      <div class="impact-item"><div class="impact-name">Tránsito vehicular en vía principal</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:60%"></div></div><div class="impact-score neg-score">-3</div></div>
+      <div class="impact-item"><div class="impact-name">Recarga acuífera (impermeabilización)</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:40%"></div></div><div class="impact-score neg-score">-2</div></div>
+      <div class="impact-item"><div class="impact-name">Contaminación suelo (aceites/parqueo)</div><div class="impact-bar"><div class="impact-fill neg-fill" style="width:40%"></div></div><div class="impact-score neg-score">-2</div></div>
+    </div>
+  </div>
+  <div class="imp-row">
+    <div class="imp-card imp-pos" style="grid-column:1/-1">
+      <div class="imp-label">🟢 Impactos Positivos — Etapa Operativa (permanentes)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+        <div>
+          <div class="impact-item"><div class="impact-name">Generación de empleo permanente</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:100%"></div></div><div class="impact-score pos-score">+5</div></div>
+          <div class="impact-item"><div class="impact-name">Provisión de servicios comerciales</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:80%"></div></div><div class="impact-score pos-score">+4</div></div>
+        </div>
+        <div>
+          <div class="impact-item"><div class="impact-name">Dinamización económica cantonal</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:80%"></div></div><div class="impact-score pos-score">+4</div></div>
+          <div class="impact-item"><div class="impact-name">Mejora calidad de vida comunidad</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:80%"></div></div><div class="impact-score pos-score">+4</div></div>
+        </div>
+        <div>
+          <div class="impact-item"><div class="impact-name">Instalación sistemas sanitarios</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:40%"></div></div><div class="impact-score pos-score">+2</div></div>
+          <div class="impact-item"><div class="impact-name">Estacionamientos semipermeables</div><div class="impact-bar"><div class="impact-fill pos-fill" style="width:40%"></div></div><div class="impact-score pos-score">+2</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PGA -->
+<section id="pga" class="reveal">
+  <div class="section-tag">Plan de Gestión Ambiental · Decreto N° 43898</div>
+  <h2 class="section-title">Pronóstico del <span>PGA</span></h2>
+  <p class="section-lead">Por cada impacto identificado, una medida de mitigación o compensación, un indicador de seguimiento y un responsable de ejecución.</p>
+  <div class="pga-table-wrap">
+    <table class="pga-table">
+      <thead>
+        <tr>
+          <th>Factor / Impacto</th>
+          <th>Severidad</th>
+          <th>Medida de Mitigación / Compensación</th>
+          <th>Indicador de Seguimiento</th>
+          <th>Responsable</th>
+          <th>Frecuencia</th>
+          <th>Costo Est. (CRC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Aire — polvo y partículas (construcción)</td><td><span class="badge badge-alt">Alto -4</span></td><td>Riego 2x/día en superficies; mallas perimetrales de contención</td><td>Registro fotográfico diario; inspección visual</td><td>Contratista / Regente</td><td>Diaria</td><td>₡1.500.000</td></tr>
+        <tr><td>Ruido y vibraciones (construcción)</td><td><span class="badge badge-alt">Alto -4</span></td><td>Horario restringido (7am-5pm L-V / 7am-12m S); mantenimiento maquinaria; barreras portátiles</td><td>Registro de quejas; medición dB mensual en perímetro</td><td>Regente ambiental</td><td>Mensual</td><td>₡800.000</td></tr>
+        <tr><td>Escombros de demolición</td><td><span class="badge badge-alt">Crítico -4</span></td><td>Clasificación en sitio; transporte a gestor autorizado; registro de manifiestos</td><td>Cuaderno de salidas con peso, fecha y destino</td><td>Contratista / Regente</td><td>Por evento</td><td>₡2.500.000</td></tr>
+        <tr><td>Erosión de suelos (construcción)</td><td><span class="badge badge-mod">Mod. -3</span></td><td>Trampas de sedimentos en cunetas; cobertura con geotextil en períodos de lluvia</td><td>Inspección visual semanal; registro fotográfico</td><td>Regente ambiental</td><td>Semanal</td><td>₡600.000</td></tr>
+        <tr><td>Agua subterránea (riesgo contaminación)</td><td><span class="badge badge-mod">Mod. -2</span></td><td>Impermeabilización áreas de combustible; kit antiderrame en obra; trampa de grasas provisional</td><td>Revisión mensual de impermeabilizaciones; registro de incidentes</td><td>Regente ambiental</td><td>Mensual</td><td>₡1.200.000</td></tr>
+        <tr><td>Aguas residuales — restaurante (operación)</td><td><span class="badge badge-alt">Crítico -4</span></td><td>Trampa de grasas ≥500L + STAR (reactor anaerobio + filtro biológico); limpieza c/15 días</td><td>Análisis fisicoquímico del efluente c/6 meses (Decreto 33601)</td><td>Regente / Especialista AR</td><td>Semestral</td><td>₡18–25M instalación</td></tr>
+        <tr><td>Residuos sólidos — operación comercial</td><td><span class="badge badge-mod">Mod. -3</span></td><td>Centro de acopio diferenciado; contratos con gestores autorizados; cumplimiento Ley 8839</td><td>Registro mensual de generación por categoría (kg)</td><td>Administración / Regente</td><td>Mensual</td><td>₡800.000 + ₡500.000/año</td></tr>
+        <tr><td>Tránsito vehicular — operación</td><td><span class="badge badge-mod">Mod. -3</span></td><td>Carril de desaceleración; señalización horizontal/vertical; estudio de impacto vial</td><td>Registro de colas y tiempos en acceso; revisión anual del plan</td><td>Administración / Regente</td><td>Mensual (año 1)</td><td>₡5.000.000</td></tr>
+        <tr><td>Drenaje pluvial e impermeabilización</td><td><span class="badge badge-mod">Mod. -3</span></td><td>Cunetas perimetrales, bajantes y conexión al sistema municipal; mantenimiento c/3 meses</td><td>Inspección trimestral de cunetas y sistemas de retención</td><td>Regente / Mantenimiento</td><td>Trimestral</td><td>₡1.500.000/año</td></tr>
+        <tr><td>Compensación ambiental — vegetación</td><td><span class="badge badge-res">Compensación</span></td><td>15 árboles nativos (Inga spp., Poro gigante) en bermas y aceras perimetrales</td><td>Registro fotográfico semestral; reposición de marras</td><td>Regente / Mantenimiento</td><td>Semestral</td><td>₡1.200.000 siembra</td></tr>
+        <tr><td>Componente social — participación</td><td><span class="badge badge-res">Social</span></td><td>Comité de Vigilancia Ambiental Comunitaria (3-5 vecinos); reuniones trimestrales; canal de comunicación</td><td>Actas de reuniones; registro de quejas; resolución ≤15 días hábiles</td><td>Administración / Regente</td><td>Trimestral</td><td>₡500.000/año</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- COSTOS -->
+<section id="costos" class="reveal">
+  <div class="section-tag">Costos de Viabilidad Ambiental</div>
+  <h2 class="section-title">¿Cuánto cuesta <span>la VLA?</span></h2>
+  <p class="section-lead">El costo total para obtener la Viabilidad (Licencia) Ambiental se estima entre ₡68,5 millones y ₡86,2 millones, equivalente al 2,1–2,7% del monto total de inversión.</p>
+  <div class="cost-grid">
+    <div>
+      <table class="cost-table">
+        <tr><td>Servicios SETENA (trámite D1 + garantía ambiental)</td><td>₡ 3,4M</td></tr>
+        <tr><td>Estudios técnicos (geotécnico, hidrológico, arqueológico, biológico, vial, social)</td><td>₡ 8,9M – ₡13,1M</td></tr>
+        <tr><td>Honorarios profesionales (consultor, arquitecto, regente, notario, CFIA)</td><td>₡ 18,5M – ₡28,2M</td></tr>
+        <tr><td>Trámites municipales e institucionales (permiso construcción, AyA, CNFL, Salud)</td><td>₡ 37,8M – ₡41,5M</td></tr>
+        <tr class="total-row"><td>TOTAL ESTIMADO VIABILIDAD AMBIENTAL</td><td>₡ 68,5M – ₡86,2M</td></tr>
+      </table>
+      <div class="regencia-box">
+        <h4>⏱️ Regencia Ambiental: 33 meses de seguimiento</h4>
+        <div class="timeline-bar">
+          <div class="tl-seg tl-demol">3m Demol.</div>
+          <div class="tl-seg tl-const">18 meses Construcción</div>
+          <div class="tl-seg tl-oper">12 m Operación</div>
+        </div>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-top:12px">3 IRA durante construcción (c/6 meses) + 1 IRA final + 1 IRA operativo año 1</p>
+      </div>
+    </div>
+    <div>
+      <div class="cost-total-box">
+        <h4>Costo total de viabilidad ambiental</h4>
+        <div class="cost-total-num">₡68,5M<br>– ₡86,2M</div>
+        <div class="cost-total-sub">sobre una inversión total de ₡3.200 millones</div>
+        <div class="cost-pct">2,1%</div>
+        <div class="cost-pct-label">del valor de la inversión total · dentro del rango típico para centros comerciales B2</div>
+      </div>
+      <div class="regencia-box" style="background:rgba(82,183,136,0.08)">
+        <h4>Costo total de regencia ambiental (33 meses)</h4>
+        <div style="font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--verde-claro);margin:8px 0">₡17.040.000</div>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.6)">Incluye honorarios mensuales del regente, elaboración de 5 IRA, visitas de campo y análisis de laboratorio</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSIONES -->
+<section id="conclusiones" class="reveal">
+  <div class="section-tag">Conclusiones y Recomendaciones</div>
+  <h2 class="section-title">¿Qué <span>concluimos?</span></h2>
+  <p class="section-lead">Siete conclusiones y cinco recomendaciones propias del análisis técnico y social del proyecto.</p>
+  <div class="concl-grid">
+    <div class="concl-box">
+      <h3>✅ Conclusiones</h3>
+      <ul class="concl-list">
+        <li>El proyecto es técnicamente viable para el distrito de Patarrás, respaldado por una demanda comunitaria insatisfecha: 87% de vecinos sale del distrito cada semana para hacer compras.</li>
+        <li>La principal limitante técnica es la <strong>ausencia de red de alcantarillado sanitario</strong> en Patarrás, que obliga al diseño de un sistema de tratamiento in situ (STAR) de ₡18–25 millones adicionales.</li>
+        <li>La vulnerabilidad acuífera media del sitio (SENARA) exige medidas estrictas de impermeabilización en áreas críticas para proteger el acuífero del Valle Central.</li>
+        <li>Los impactos negativos más críticos son las aguas residuales del restaurante (-4) y los escombros de demolición (-4), ambos controlables con medidas técnicas específicas.</li>
+        <li>Los impactos positivos en la etapa operativa superan en número a los negativos: generación de empleo (+5), provisión de servicios (+4) y dinamización económica (+4).</li>
+        <li>El costo de la VLA (₡68,5M–₡86,2M) representa el 2,1–2,7% de la inversión total, dentro del rango normal para proyectos B2 en Costa Rica.</li>
+        <li>El 84% de la comunidad apoya el proyecto y el 70% está dispuesto a participar en el Comité de Vigilancia Ambiental Comunitaria.</li>
+      </ul>
+    </div>
+    <div class="concl-box">
+      <h3>💡 Recomendaciones</h3>
+      <ul class="concl-list recom-list">
+        <li>Priorizar el diseño y aprobación del STAR ante AyA y Ministerio de Salud como primer paso del trámite, dado que es el elemento con mayor tiempo de aprobación y mayor impacto sobre el diseño.</li>
+        <li>Realizar un estudio de tránsito vehicular completo antes de presentar el D1 ante la SETENA, para diseñar las medidas de acceso y gestión de colas en la carretera principal.</li>
+        <li>Realizar un estudio de vulnerabilidad acuífera detallado a escala de sitio, que complemente la cartografía regional del SENARA, para orientar el diseño de las impermeabilizaciones.</li>
+        <li>Activar el Comité de Vigilancia Ambiental Comunitaria durante la fase de diseño, antes del inicio de obras, para construir confianza y reducir el riesgo de conflictos sociales.</li>
+        <li>Diseñar el edificio con criterios de eficiencia hídrica (captación de agua lluvia para sanitarios e irrigación), lo que reduciría la demanda sobre la ASADA local y mejoraría el perfil ambiental.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCIAS -->
+<section id="referencias" class="reveal">
+  <div class="section-tag">Bibliografía · Formato APA</div>
+  <h2 class="section-title">Referencias <span>Bibliográficas</span></h2>
+  <div class="ref-grid">
+    <div class="ref-item">Asamblea Legislativa de CR. (1995). <em>Ley Orgánica del Ambiente, Ley N° 7554</em>. Diario Oficial La Gaceta.</div>
+    <div class="ref-item">Asamblea Legislativa de CR. (2010). <em>Ley para la Gestión Integral de Residuos, Ley N° 8839</em>. Diario Oficial La Gaceta.</div>
+    <div class="ref-item">Canter, L. W. (1996). <em>Environmental Impact Assessment</em> (2nd ed.). McGraw-Hill.</div>
+    <div class="ref-item">Cisneros, R., & Monge, J. (2020). <em>Evaluación de Impacto Ambiental: Teoría y Práctica en el Contexto Costarricense</em>. Editorial TEC.</div>
+    <div class="ref-item">Contraloría General de la República. (2020). <em>Informe de Auditoría sobre la eficacia del Estado para garantizar la protección del recurso hídrico</em>. CGR.</div>
+    <div class="ref-item">INEC. (2011). <em>Censo Nacional de Población y Vivienda 2011</em>. San José: INEC. https://www.inec.go.cr</div>
+    <div class="ref-item">Leopold, L. B., et al. (1971). <em>A procedure for evaluating environmental impact</em>. Geological Survey Circular 645. U.S. Dept. of the Interior.</div>
+    <div class="ref-item">MINAE. (2022). <em>Decreto Ejecutivo N° 43898-MINAE-MOPT-MAG-MEIC: Reglamento de Evaluación, Control y Seguimiento Ambiental</em>. La Gaceta.</div>
+    <div class="ref-item">Ministerio de Salud. (2017). <em>Decreto N° 39887-S: Reglamento para la Aprobación e Instalación de Sistemas de Tratamiento de Aguas Residuales</em>.</div>
+    <div class="ref-item">SENARA. <em>Mapa de Vulnerabilidad Acuífera del Valle Central</em>. San José: SENARA. https://www.senara.go.cr</div>
+    <div class="ref-item">SETENA. (2018). <em>Manual de Instrumentos Técnicos del Proceso de EIA</em>. San José: MINAE.</div>
+    <div class="ref-item">SNIT. (2021). <em>Cobertura de la Tierra SNIT 2021</em>. MINAE-SINAC. https://www.snitcr.go.cr</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-names">Karol Muñoz Araya &nbsp;·&nbsp; Rodolfo Alberto Meléndez Campos</div>
+  <p><strong>IMRH-824 Evaluación de Impacto Ambiental II</strong> · I Cuatrimestre 2026</p>
+  <p style="margin-top:6px">Universidad Técnica Nacional · Sede Central, Alajuela</p>
+  <p style="margin-top:6px">Académico: IQ. Douglas Mora Ulate · Abril 2026</p>
+</footer>
+
+<script>
+// ===== CHARTS =====
+const chartColors = {
+  verde: 'rgba(82,183,136,0.85)',
+  verdeClaro: 'rgba(183,228,199,0.85)',
+  azul: 'rgba(30,111,138,0.85)',
+  acento: 'rgba(233,196,106,0.85)',
+  rojo: 'rgba(214,40,40,0.85)',
+  naranja: 'rgba(230,126,34,0.85)',
+};
+
+// Demanda de servicios
+new Chart(document.getElementById('chartDemanda'), {
+  type: 'bar',
+  data: {
+    labels: ['Supermercado','Farmacia','Banco/\nCajero','Restaurantes','Ropa/\nCalzado','Papelería'],
+    datasets: [{
+      data: [83, 73, 67, 60, 47, 40],
+      backgroundColor: [chartColors.verde, chartColors.verde, chartColors.acento, chartColors.azul, chartColors.verdeClaro, chartColors.verdeClaro],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { max: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 }, callback: v => v + '%' } },
+      y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 } } }
+    }
+  }
+});
+
+// Preocupaciones ambientales
+new Chart(document.getElementById('chartPreocupaciones'), {
+  type: 'bar',
+  data: {
+    labels: ['Tránsito','Residuos','Agua','Ruido\nconstrucc.','Polvo','Paisaje'],
+    datasets: [{
+      data: [80, 63, 53, 50, 47, 33],
+      backgroundColor: [chartColors.rojo, chartColors.naranja, chartColors.azul, chartColors.naranja, chartColors.acento, chartColors.verdeClaro],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { max: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 }, callback: v => v + '%' } },
+      y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 } } }
+    }
+  }
+});
+
+// ===== SCROLL REVEAL =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
