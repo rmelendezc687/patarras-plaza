@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 Ruleta Patarrás Plaza — EIA II</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a1a0f;
+  --bg2: #0f2418;
+  --verde: #3ddc84;
+  --verde2: #2aab63;
+  --acento: #f5c842;
+  --rojo: #ff4d6d;
+  --azul: #4fc3f7;
+  --lila: #ce93d8;
+  --naranja: #ffb347;
+  --blanco: #f0f7f2;
+  --gris: rgba(255,255,255,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
+  color:var(--blanco);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* BG noise */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.4;
+}
+
+/* HEADER */
+header{
+  text-align:center;padding:32px 20px 16px;position:relative;z-index:1;
+}
+header h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.6rem,4vw,2.8rem);
+  color:var(--verde);letter-spacing:-0.02em;
+}
+header p{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+
+/* SCORE BAR */
+.scorebar{
+  display:flex;justify-content:center;gap:32px;
+  padding:12px 24px;margin:0 auto 24px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:100px;width:fit-content;position:relative;z-index:1;
+}
+.score-item{text-align:center}
+.score-num{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--acento);line-height:1}
+.score-lbl{font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase}
+
+/* MAIN LAYOUT */
+.game-wrap{
+  display:grid;grid-template-columns:1fr 480px 1fr;
+  gap:32px;max-width:1300px;margin:0 auto;
+  padding:0 24px 40px;position:relative;z-index:1;
+  align-items:start;
+}
+
+/* LEFT — teams */
+.teams-panel{padding-top:8px}
+.teams-panel h3{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px}
+.team-card{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:16px 20px;margin-bottom:12px;cursor:pointer;
+  transition:all .2s;
+}
+.team-card:hover{background:rgba(255,255,255,.09)}
+.team-card.active{border-color:var(--verde);background:rgba(61,220,132,.08)}
+.team-name{font-weight:700;font-size:.95rem;margin-bottom:6px}
+.team-pts{
+  font-family:'Playfair Display',serif;font-size:2rem;
+  color:var(--acento);line-height:1;
+}
+.team-pts span{font-family:'Syne',sans-serif;font-size:.7rem;color:rgba(255,255,255,.35);margin-left:4px}
+.btn-add{
+  background:rgba(61,220,132,.15);border:1px solid rgba(61,220,132,.3);
+  color:var(--verde);border-radius:8px;padding:6px 14px;
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
+  cursor:pointer;margin-top:8px;transition:all .2s;
+}
+.btn-add:hover{background:rgba(61,220,132,.25)}
+.btn-sub{
+  background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.25);
+  color:var(--rojo);border-radius:8px;padding:6px 14px;
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
+  cursor:pointer;margin-top:8px;margin-left:6px;transition:all .2s;
+}
+
+/* CENTER — wheel */
+.wheel-center{display:flex;flex-direction:column;align-items:center;gap:24px}
+
+.wheel-container{position:relative;width:420px;height:420px;flex-shrink:0}
+.wheel-pointer{
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  width:0;height:0;
+  border-left:14px solid transparent;
+  border-right:14px solid transparent;
+  border-top:30px solid var(--acento);
+  filter:drop-shadow(0 0 8px rgba(245,200,66,.8));
+  z-index:10;
+}
+canvas#wheel{
+  border-radius:50%;
+  filter:drop-shadow(0 0 40px rgba(61,220,132,.25));
+}
+.wheel-center-btn{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle,#1a3a2a,#0a1a0f);
+  border:3px solid var(--verde);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;cursor:pointer;z-index:10;
+  transition:transform .15s,filter .15s;
+  filter:drop-shadow(0 0 12px rgba(61,220,132,.4));
+}
+.wheel-center-btn:hover{transform:translate(-50%,-50%) scale(1.1)}
+.wheel-center-btn:active{transform:translate(-50%,-50%) scale(0.95)}
+.wheel-center-btn.spinning{animation:pulse-btn .6s ease infinite alternate}
+@keyframes pulse-btn{from{filter:drop-shadow(0 0 8px rgba(61,220,132,.4))}to{filter:drop-shadow(0 0 24px rgba(61,220,132,.9))}}
+
+.spin-btn{
+  background:linear-gradient(135deg,var(--verde2),var(--verde));
+  color:#0a1a0f;border:none;border-radius:14px;
+  padding:16px 48px;font-family:'Syne',sans-serif;
+  font-size:1.05rem;font-weight:800;cursor:pointer;letter-spacing:.05em;
+  transition:transform .15s,filter .15s;
+  filter:drop-shadow(0 4px 20px rgba(61,220,132,.4));
+}
+.spin-btn:hover{transform:translateY(-2px);filter:drop-shadow(0 6px 28px rgba(61,220,132,.6))}
+.spin-btn:active{transform:translateY(0)}
+.spin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* RIGHT — question panel */
+.question-panel{padding-top:8px}
+.q-box{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:28px;min-height:360px;
+  display:flex;flex-direction:column;
+}
+.q-category{
+  font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;
+  font-weight:700;margin-bottom:16px;padding:6px 14px;
+  border-radius:100px;width:fit-content;
+}
+.q-text{
+  font-family:'Playfair Display',serif;
+  font-size:1.15rem;line-height:1.6;color:#fff;flex:1;
+  margin-bottom:24px;
+}
+.q-placeholder{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;color:rgba(255,255,255,.2);
+  text-align:center;margin:auto;line-height:1.7;
+}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:13px 18px;cursor:pointer;
+  font-size:.9rem;font-weight:600;transition:all .2s;text-align:left;
+  color:var(--blanco);font-family:'Syne',sans-serif;
+}
+.opt:hover:not(:disabled){background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.25);transform:translateX(4px)}
+.opt.correct{background:rgba(61,220,132,.2);border-color:var(--verde);color:var(--verde)}
+.opt.wrong{background:rgba(255,77,109,.15);border-color:var(--rojo);color:var(--rojo)}
+.opt:disabled{cursor:not-allowed}
+
+.q-feedback{
+  margin-top:16px;padding:14px 18px;border-radius:12px;
+  font-size:.88rem;line-height:1.6;display:none;
+}
+.q-feedback.show{display:block}
+.q-feedback.ok{background:rgba(61,220,132,.12);border:1px solid rgba(61,220,132,.3);color:#a8f0c6}
+.q-feedback.fail{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.25);color:#ffb3c1}
+
+.btn-next{
+  margin-top:16px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);color:#fff;
+  border-radius:10px;padding:11px 24px;font-family:'Syne',sans-serif;
+  font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;
+  display:none;
+}
+.btn-next.show{display:block}
+.btn-next:hover{background:rgba(255,255,255,.14)}
+
+/* RESULT OVERLAY */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:none;place-items:center;z-index:100;backdrop-filter:blur(8px);
+}
+.overlay.show{display:grid}
+.result-card{
+  background:var(--bg2);border:1px solid rgba(61,220,132,.3);
+  border-radius:24px;padding:48px;text-align:center;max-width:480px;
+  animation:popIn .4s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.result-emoji{font-size:4rem;margin-bottom:16px}
+.result-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--verde);margin-bottom:8px}
+.result-sub{color:rgba(255,255,255,.55);font-size:.9rem;margin-bottom:28px}
+.result-pts{font-family:'Playfair Display',serif;font-size:3.5rem;color:var(--acento)}
+.btn-close{
+  margin-top:24px;background:var(--verde2);color:#0a1a0f;
+  border:none;border-radius:12px;padding:14px 36px;
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
+  cursor:pointer;transition:transform .15s;
+}
+.btn-close:hover{transform:scale(1.04)}
+
+/* LEGEND */
+.legend{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  padding:0 24px 32px;position:relative;z-index:1;
+}
+.legend-item{
+  display:flex;align-items:center;gap:7px;
+  font-size:.72rem;color:rgba(255,255,255,.5);
+}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+@media(max-width:1100px){
+  .game-wrap{grid-template-columns:1fr;max-width:520px}
+  .wheel-container{width:320px;height:320px}
+  .teams-panel,.question-panel{order:2}
+  .wheel-center{order:1}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 Ruleta Patarrás Plaza</h1>
+  <p>Centro Comercial · EIA II · UTN · I Cuatrimestre 2026</p>
+</header>
+
+<div class="scorebar">
+  <div class="score-item"><div class="score-num" id="totalRounds">0</div><div class="score-lbl">Rondas</div></div>
+  <div class="score-item"><div class="score-num" id="totalCorrect">0</div><div class="score-lbl">Correctas</div></div>
+  <div class="score-item"><div class="score-num" id="totalPct">—</div><div class="score-lbl">Acierto</div></div>
+</div>
+
+<div class="game-wrap">
+
+  <!-- EQUIPOS -->
+  <div class="teams-panel">
+    <h3>🏆 Equipos</h3>
+    <div class="team-card active" id="team-0">
+      <div class="team-name">⚡ Equipo A</div>
+      <div class="team-pts" id="pts-0">0 <span>pts</span></div>
+      <button class="btn-add" onclick="addPts(0,1)">+1</button>
+      <button class="btn-sub" onclick="addPts(0,-1)">−1</button>
+    </div>
+    <div class="team-card" id="team-1">
+      <div class="team-name">🌊 Equipo B</div>
+      <div class="team-pts" id="pts-1">0 <span>pts</span></div>
+      <button class="btn-add" onclick="addPts(1,1)">+1</button>
+      <button class="btn-sub" onclick="addPts(1,-1)">−1</button>
+    </div>
+    <div class="team-card" id="team-2">
+      <div class="team-name">🌱 Equipo C</div>
+      <div class="team-pts" id="pts-2">0 <span>pts</span></div>
+      <button class="btn-add" onclick="addPts(2,1)">+1</button>
+      <button class="btn-sub" onclick="addPts(2,-1)">−1</button>
+    </div>
+    <div class="team-card" id="team-3">
+      <div class="team-name">🔥 Equipo D</div>
+      <div class="team-pts" id="pts-3">0 <span>pts</span></div>
+      <button class="btn-add" onclick="addPts(3,1)">+1</button>
+      <button class="btn-sub" onclick="addPts(3,-1)">−1</button>
+    </div>
+  </div>
+
+  <!-- RULETA -->
+  <div class="wheel-center">
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheel" width="420" height="420"></canvas>
+      <div class="wheel-center-btn" id="spinBtn" onclick="spin()">🎯</div>
+    </div>
+    <button class="spin-btn" id="mainSpin" onclick="spin()">GIRAR RULETA</button>
+  </div>
+
+  <!-- PREGUNTA -->
+  <div class="question-panel">
+    <div class="q-box" id="qbox">
+      <p class="q-placeholder">Gira la ruleta para<br>revelar la categoría<br>y la pregunta 🎲</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend" id="legend"></div>
+
+<!-- OVERLAY resultado -->
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="result-emoji" id="resEmoji">🎉</div>
+    <div class="result-title" id="resTitle">¡Correcto!</div>
+    <div class="result-sub" id="resSub">Excelente conocimiento ambiental</div>
+    <div class="result-pts" id="resPts">+2 pts</div>
+    <button class="btn-close" onclick="closeOverlay()">Continuar →</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATOS DE LA RULETA
+// ══════════════════════════════════════════
+const SEGMENTS = [
+  { label: "🌿 Marco\nLegal",   color: "#2d6a4f", text: "#a8f0c6" },
+  { label: "💰 Costos\nVLA",    color: "#b08010", text: "#fff3b0" },
+  { label: "💧 Impactos\nHídricos", color: "#1565a8", text: "#b3d9ff" },
+  { label: "📊 Encuesta\nComunal",  color: "#7b3fa0", text: "#e8c5ff" },
+  { label: "🏗️ El\nProyecto",  color: "#8b3a1a", text: "#ffd0b0" },
+  { label: "⭐ COMODÍN\n¡Doble pts!", color: "#c0392b", text: "#ffe0e0" },
+  { label: "🗺️ Ubicación\n& Sitio",  color: "#1a5e47", text: "#a8f0c6" },
+  { label: "📋 PGA &\nMedidas",  color: "#4a4a00", text: "#ffffa0" },
+];
+
+// ══════════════════════════════════════════
+// BANCO DE PREGUNTAS
+// ══════════════════════════════════════════
+const QUESTIONS = {
+  0: [ // Marco Legal
+    { q:"¿Cuál decreto regula actualmente el proceso de Evaluación de Impacto Ambiental en Costa Rica?",
+      opts:["Decreto 31849","Decreto 43898","Decreto 33601","Decreto 39887"],
+      ans:1, exp:"El Decreto Ejecutivo N° 43898-MINAE-MOPT-MAG-MEIC es el Reglamento de Evaluación, Control y Seguimiento Ambiental vigente desde 2022, que sustituyó al anterior 31849." },
+    { q:"¿Qué artículo de la Constitución Política de Costa Rica establece el derecho a un ambiente sano?",
+      opts:["Artículo 21","Artículo 33","Artículo 50","Artículo 74"],
+      ans:2, exp:"El Artículo 50 de la Constitución Política reconoce el derecho de toda persona a un ambiente sano y ecológicamente equilibrado." },
+    { q:"¿Qué ley costarricense regula la gestión integral de residuos sólidos?",
+      opts:["Ley 7554","Ley 8839","Ley 7600","Ley 7555"],
+      ans:1, exp:"La Ley N° 8839 'Ley para la Gestión Integral de Residuos' establece la jerarquía: evitar, reducir, reutilizar, valorizar y tratar." },
+    { q:"¿Cuál es el instrumento de evaluación ambiental que corresponde al proyecto Patarrás Plaza según su SIA de 180 puntos?",
+      opts:["EIA completa (D3)","D2 + estudios complementarios","Formulario D1 + DJCA","Solo Declaración Jurada"],
+      ans:2, exp:"Con una SIA de 180 puntos —por debajo del umbral de 500— el instrumento correcto es el Formulario D1 más la Declaración Jurada de Compromisos Ambientales (DJCA)." },
+    { q:"¿Qué significa DJCA en el contexto de la evaluación ambiental costarricense?",
+      opts:["Declaración Jurídica de Compromisos Ambientales","Declaración Jurada de Compromisos Ambientales","Documento de Jurisdicción y Control Ambiental","Dictamen de Jurisprudencia en Casos Ambientales"],
+      ans:1, exp:"DJCA = Declaración Jurada de Compromisos Ambientales. Es el instrumento que acompaña al Formulario D1 y tiene carácter de declaración bajo fe de juramento." },
+  ],
+  1: [ // Costos VLA
+    { q:"¿Cuánto cuesta aproximadamente la garantía ambiental de cumplimiento para el proyecto Patarrás Plaza?",
+      opts:["₡794.390","₡3.200.000","₡17.000.000","₡68.500.000"],
+      ans:1, exp:"La garantía ambiental equivale al 0,1% del monto total de inversión. Con una inversión de ₡3.200 millones, la garantía es de ₡3.200.000." },
+    { q:"¿Cuál es el rango total estimado para obtener la Viabilidad Ambiental del proyecto Patarrás Plaza?",
+      opts:["₡5M – ₡10M","₡18M – ₡25M","₡68,5M – ₡86,2M","₡120M – ₡200M"],
+      ans:2, exp:"El costo total estimado para la VLA es de ₡68,5 millones a ₡86,2 millones, que representa el 2,1–2,7% del monto total de inversión de ₡3.200 millones." },
+    { q:"¿Cuánto se estima el costo del sistema de tratamiento de aguas residuales (STAR) que requiere el proyecto?",
+      opts:["₡3M – ₡5M","₡8M – ₡12M","₡18M – ₡25M","₡35M – ₡50M"],
+      ans:2, exp:"El STAR (reactor anaerobio + filtro biológico) para los restaurantes del centro comercial se estima entre ₡18 millones y ₡25 millones, dado que no existe alcantarillado sanitario en Patarrás." },
+    { q:"¿Cuántos meses dura la regencia ambiental estimada para el proyecto?",
+      opts:["12 meses","21 meses","33 meses","48 meses"],
+      ans:2, exp:"33 meses: 3 de demolición + 18 de construcción + 12 del primer año de operación. Durante construcción se presentan 3 IRA semestrales más un informe final consolidado." },
+    { q:"¿Cuánto cuesta el total de la regencia ambiental para los 33 meses del proyecto?",
+      opts:["₡3.500.000","₡8.900.000","₡17.040.000","₡28.000.000"],
+      ans:2, exp:"El costo total de la regencia ambiental para 33 meses es ₡17.040.000, incluyendo honorarios del regente, elaboración de informes IRA, visitas de campo y análisis de laboratorio." },
+  ],
+  2: [ // Impactos Hídricos
+    { q:"¿Cuál es el impacto ambiental de mayor criticidad en la etapa OPERATIVA del proyecto?",
+      opts:["Tránsito vehicular (-3)","Generación de escombros (-4)","Aguas residuales con grasas del restaurante (-4)","Ruido de la construcción (-4)"],
+      ans:2, exp:"Las aguas residuales con carga orgánica y grasas del restaurante reciben magnitud -4 e importancia 9, siendo el único impacto operativo crítico permanente. Requiere trampa de grasas y STAR." },
+    { q:"¿Cómo clasifica el SENARA la vulnerabilidad acuífera del Distrito de Patarrás?",
+      opts:["Alta","Media","Baja","No aplica — no hay acuífero"],
+      ans:1, exp:"El SENARA clasifica el sitio con vulnerabilidad acuífera MEDIA, asociada al sistema de acuíferos del Valle Central. Requiere medidas de impermeabilización en áreas críticas." },
+    { q:"¿Qué porcentaje de los estacionamientos del proyecto se construirá con pavimento semipermeable?",
+      opts:["20%","40%","60%","100%"],
+      ans:2, exp:"El 60% de los 45 espacios de estacionamiento usará pavimento semipermeable (zacate bloque) como medida de compensación hidrológica para mantener la infiltración del suelo." },
+    { q:"¿A cuántos metros del sitio propuesto pasa el Río Patarrás?",
+      opts:["50 metros","100 metros","250 metros","500 metros"],
+      ans:2, exp:"El Río Patarrás transcurre aproximadamente 250 metros al este del sitio propuesto. Esto obliga a verificar la zona de protección fluvial de 15 metros de ribera que establece la Ley 7554." },
+    { q:"¿Qué decreto regula el vertido de aguas residuales al alcantarillado en Costa Rica?",
+      opts:["Decreto 43898","Decreto 33601-MINAE-S","Decreto 39887-S","Decreto 31849"],
+      ans:1, exp:"El Decreto N° 33601-S-MINAE 'Reglamento de Vertido y Reúso de Aguas Residuales' establece los parámetros de calidad para la descarga. Es el decreto crítico para el restaurante del proyecto." },
+  ],
+  3: [ // Encuesta
+    { q:"¿Cuántas personas fueron encuestadas para el proyecto Patarrás Plaza?",
+      opts:["15 personas","20 personas","30 personas","50 personas"],
+      ans:2, exp:"Se aplicó una encuesta a 30 personas residentes en el área de influencia directa (radio 500 m del sitio), de manera voluntaria y anónima, durante marzo de 2026." },
+    { q:"¿Qué porcentaje de los encuestados sale del distrito semanalmente para hacer compras en un supermercado?",
+      opts:["52%","67%","87%","95%"],
+      ans:2, exp:"El 87% de los encuestados debe desplazarse fuera del distrito al menos una vez por semana. Esto confirma la demanda insatisfecha que justifica el proyecto." },
+    { q:"¿Qué porcentaje de vecinos mostró disposición a participar en el Comité de Vigilancia Ambiental?",
+      opts:["40%","55%","70%","84%"],
+      ans:2, exp:"El 70% de los encuestados indicó disposición para participar en un Comité de Vigilancia Ambiental Comunitaria. Este capital social es un activo para la implementación del PGA." },
+    { q:"¿Cuál fue la principal preocupación ambiental expresada por los vecinos de Patarrás?",
+      opts:["Cambio de paisaje (33%)","Contaminación del agua (53%)","Ruido en construcción (50%)","Aumento del tránsito vehicular (80%)"],
+      ans:3, exp:"El 80% de los encuestados mencionó el aumento del tránsito vehicular como su principal preocupación ambiental, seguido por la generación de residuos (63%) y la contaminación del agua (53%)." },
+    { q:"¿Qué porcentaje de los encuestados está de acuerdo con la construcción del centro comercial?",
+      opts:["47%","68%","84%","97%"],
+      ans:2, exp:"El 84% apoya el proyecto: 47% totalmente de acuerdo + 37% de acuerdo con condiciones. Solo el 7% se opone, principalmente por preocupaciones de tráfico." },
+  ],
+  4: [ // El Proyecto
+    { q:"¿Cuántos metros cuadrados de área construida tendrá el Centro Comercial Patarrás Plaza?",
+      opts:["3.500 m²","5.800 m²","7.200 m²","10.000 m²"],
+      ans:2, exp:"El proyecto tiene 3.500 m² de lote y 7.200 m² de área construida distribuidos en 3 niveles. El área construida es el doble del lote gracias a los múltiples pisos." },
+    { q:"¿Cuántos espacios de estacionamiento contempla el proyecto?",
+      opts:["16 espacios","30 espacios","45 espacios","60 espacios"],
+      ans:2, exp:"El proyecto contempla 45 espacios de estacionamiento en el nivel de planta baja, de los cuales el 60% se construirá con pavimento semipermeable de zacate bloque." },
+    { q:"¿Cuál es la categoría de impacto ambiental potencial (IAP) del proyecto según la SETENA?",
+      opts:["A — Impacto mínimo","B1 — Impacto bajo","B2 — Impacto moderado","C — Impacto alto"],
+      ans:2, exp:"El proyecto clasifica como Categoría B2 (impacto potencial moderado), lo que determina el uso del Formulario D1 + DJCA como instrumento de evaluación ambiental." },
+    { q:"¿Cuál es la principal limitante técnica del proyecto Patarrás Plaza?",
+      opts:["Falta de agua potable en el distrito","Ausencia de red de alcantarillado sanitario","No hay electricidad trifásica disponible","El terreno tiene pendiente muy alta"],
+      ans:1, exp:"La ausencia de red de alcantarillado sanitario municipal en el Distrito de Patarrás obliga a diseñar un sistema de tratamiento de aguas residuales (STAR) propio, con costo estimado de ₡18–25 millones." },
+    { q:"¿Cuánto es la inversión total estimada del Centro Comercial Patarrás Plaza?",
+      opts:["₡794 millones","₡1.600 millones","₡3.200 millones","₡5.000 millones"],
+      ans:2, exp:"La inversión total estimada es de ₡3.200 millones (terreno + construcción de 7.200 m² a ₡400.000/m²), sobre la cual se calcula el 0,1% de garantía ambiental." },
+  ],
+  5: [ // COMODÍN
+    { q:"🌟 COMODÍN: ¿Cuáles son los 3 PRIMEROS pasos que debe hacer el desarrollador ANTES de iniciar obras, según la resolución de Viabilidad Ambiental?",
+      opts:["Contratar obreros, comprar materiales, iniciar demolición","Depositar garantía ambiental, nombrar Responsable Ambiental, habilitar Bitácora Digital","Tramitar permiso municipal, conectar agua, conectar electricidad","Publicar en La Gaceta, pagar impuestos, contratar seguridad"],
+      ans:1, exp:"Según el Decreto 43898, antes de iniciar obras debe: (1) depositar la garantía ambiental de cumplimiento, (2) nombrar un Responsable Ambiental con su aceptación, y (3) habilitar la Bitácora Digital Ambiental en el portal de la SETENA." },
+    { q:"🌟 COMODÍN: ¿Qué significa SIA en el proceso de Evaluación de Impacto Ambiental?",
+      opts:["Sistema Integrado de Ambiente","Significancia del Impacto Ambiental","Secretaría de Investigación Ambiental","Sistema de Indicadores Ambientales"],
+      ans:1, exp:"SIA = Significancia del Impacto Ambiental. Es el índice cuantitativo que determina qué instrumento de evaluación debe usar el proyecto (D1 si < 500 pts, D2 si 500-1000 pts, EIA completa si > 1000 pts)." },
+    { q:"🌟 COMODÍN: En la Matriz de Leopold del proyecto, ¿cuál actividad genera los impactos negativos MÁS ALTOS durante la construcción?",
+      opts:["Instalación de sistemas eléctricos","Construcción de fundaciones","Demolición de estructuras existentes","Instalación de tuberías de agua"],
+      ans:2, exp:"La demolición genera los tres impactos más críticos de la etapa constructiva: polvo/partículas (-4), ruido/vibraciones (-4) y generación de escombros (-4). Son temporales pero de alta magnitud." },
+  ],
+  6: [ // Ubicación
+    { q:"¿En qué número de distrito se ubica Patarrás dentro del cantón de Desamparados?",
+      opts:["Distrito N° 3","Distrito N° 5","Distrito N° 9","Distrito N° 12"],
+      ans:2, exp:"Patarrás es el Distrito N° 09 del Cantón 08 (Desamparados), Provincia de San José. El cantón de Desamparados tiene 13 distritos en total." },
+    { q:"¿Cuál es el radio del Área de Influencia DIRECTA (AID) definida para el proyecto?",
+      opts:["100 metros","250 metros","500 metros","2.000 metros"],
+      ans:2, exp:"El Área de Influencia Directa (AID) se delimitó en un radio de 500 metros alrededor del lote, abarcando las viviendas y servicios más próximos al proyecto." },
+    { q:"¿Cuál es la clasificación de cobertura de suelo del sitio según el SNIT 2021?",
+      opts:["Bosque secundario","Otras Tierras / Uso urbano","Pastos y Herbazales","Cultivos anuales"],
+      ans:2, exp:"La cobertura SNIT 2021 del sitio propuesto en Patarrás corresponde a Pastos y Herbazales, lo que confirma el carácter semi-rural del terreno y lo diferencia de un sitio ya urbanizado." },
+    { q:"¿Cuál es la densidad poblacional aproximada del Distrito de Patarrás?",
+      opts:["35 hab/km²","185 hab/km²","1.500 hab/km²","3.000 hab/km²"],
+      ans:1, exp:"La densidad de Patarrás es de aproximadamente 185 hab/km², muy inferior a la del Distrito Central de Desamparados (>3.000 hab/km²), lo que confirma el carácter semi-rural del distrito." },
+    { q:"¿Qué institución brinda el servicio de agua potable en el Distrito de Patarrás?",
+      opts:["Municipalidad de Desamparados","CNFL","ASADA de Patarrás / AyA","ICE"],
+      ans:2, exp:"El servicio de agua potable en Patarrás es administrado por la ASADA (Asociación Administradora del Acueducto) local, bajo la supervisión y regulación del AyA." },
+  ],
+  7: [ // PGA
+    { q:"¿Con qué frecuencia deben presentarse los Informes de Responsabilidad Ambiental (IRA) durante la construcción?",
+      opts:["Cada mes","Cada 3 meses","Cada 6 meses","Cada año"],
+      ans:2, exp:"Según la resolución de Viabilidad Ambiental, los IRA se presentan cada 6 meses durante la etapa constructiva. Además se requiere un informe final consolidado al terminar la construcción." },
+    { q:"¿Cuál es la medida de mitigación principal para el impacto de polvo durante la demolición?",
+      opts:["Suspender trabajos los días de lluvia","Riego 2 veces al día y mallas perimetrales de contención","Instalar ventiladores industriales","Plantar árboles alrededor de la obra"],
+      ans:1, exp:"La medida principal es el riego de superficies de trabajo al menos 2 veces al día, complementado con mallas perimetrales de contención perimetral. Simple, económico y muy efectivo." },
+    { q:"¿Cuál es la medida de compensación ambiental propuesta para la pérdida de vegetación del sitio?",
+      opts:["Pagar una multa ambiental","Arborización con 15 árboles nativos en bermas y aceras perimetrales","Donar dinero al SINAC","Sembrar plantas ornamentales en el techo"],
+      ans:1, exp:"Se propone la siembra de al menos 15 árboles nativos de la zona (Inga spp., Poro gigante, Guarumo) en las bermas y aceras perimetrales del proyecto, con registro fotográfico semestral y reposición de marras." },
+    { q:"¿Cuál es el horario máximo permitido para trabajos ruidosos según el PGA del proyecto?",
+      opts:["6am a 8pm todos los días","7am a 5pm L-V y 7am a 12m sábados","8am a 6pm de lunes a sábado","Sin restricción horaria"],
+      ans:1, exp:"El PGA restringe los trabajos ruidosos a 7am–5pm de lunes a viernes y 7am–12m del mediodía los sábados. Sin excepciones. Con registro de quejas vecinales y medición mensual de decibeles." },
+    { q:"¿Qué es el Comité de Vigilancia Ambiental Comunitaria propuesto en el PGA?",
+      opts:["Un grupo de inspectores del Ministerio de Salud","Un grupo de 3-5 vecinos voluntarios que monitorean el cumplimiento del PGA con reuniones trimestrales","El equipo de la empresa constructora encargado de la seguridad","Un comité de la Municipalidad de Desamparados"],
+      ans:1, exp:"El Comité de Vigilancia Ambiental Comunitaria es un órgano de participación ciudadana integrado por 3-5 vecinos voluntarios del AID, con reuniones trimestrales y un canal directo con el Regente Ambiental para gestionar quejas en ≤15 días hábiles." },
+  ],
+};
+
+// ══════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════
+let spinning = false;
+let currentAngle = 0;
+let currentSeg = -1;
+let teamPts = [0, 0, 0, 0];
+let rounds = 0, correct = 0;
+let usedQs = {};
+let isDouble = false;
+let answered = false;
+
+// ══════════════════════════════════════════
+// CANVAS WHEEL
+// ══════════════════════════════════════════
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const N = SEGMENTS.length;
+const ARC = (Math.PI * 2) / N;
+
+function drawWheel(angle) {
+  const cx = canvas.width / 2, cy = canvas.height / 2, r = cx - 8;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // outer glow ring
+  ctx.save();
+  ctx.shadowColor = 'rgba(61,220,132,0.4)';
+  ctx.shadowBlur = 24;
+  ctx.beginPath(); ctx.arc(cx,cy,r+4,0,Math.PI*2); ctx.strokeStyle='rgba(61,220,132,0.3)'; ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+
+  for (let i = 0; i < N; i++) {
+    const start = angle + i * ARC - Math.PI / 2;
+    const end = start + ARC;
+    const seg = SEGMENTS[i];
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // text
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + ARC / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = seg.text;
+    ctx.font = 'bold 12px Syne, sans-serif';
+    const lines = seg.label.split('\n');
+    lines.forEach((line, li) => {
+      ctx.fillText(line, r - 12, (li - (lines.length - 1) / 2) * 16);
+    });
+    ctx.restore();
+  }
+
+  // center circle
+  ctx.beginPath(); ctx.arc(cx,cy,40,0,Math.PI*2);
+  const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,40);
+  grad.addColorStop(0,'#1a3a2a'); grad.addColorStop(1,'#0a1a0f');
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.strokeStyle = 'rgba(61,220,132,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+drawWheel(0);
+
+// Build legend
+const leg = document.getElementById('legend');
+SEGMENTS.forEach((s,i) => {
+  const d = document.createElement('div');
+  d.className = 'legend-item';
+  d.innerHTML = `<span class="legend-dot" style="background:${s.color}"></span><span>${s.label.replace('\n',' ')}</span>`;
+  leg.appendChild(d);
+});
+
+// ══════════════════════════════════════════
+// SPIN
+// ══════════════════════════════════════════
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  answered = false;
+  document.getElementById('mainSpin').disabled = true;
+  document.getElementById('spinBtn').classList.add('spinning');
+
+  // show blank question panel while spinning
+  document.getElementById('qbox').innerHTML = `<p class="q-placeholder" style="animation:none">⏳ Girando...</p>`;
+
+  const extraSpins = (5 + Math.random() * 5) * Math.PI * 2;
+  const targetSeg = Math.floor(Math.random() * N);
+  const segAngle = targetSeg * ARC;
+  const targetAngle = currentAngle + extraSpins + (Math.PI * 2 - (currentAngle % (Math.PI * 2))) + (Math.PI * 2 - segAngle) + 0.1;
+
+  const duration = 4000 + Math.random() * 1500;
+  const start = performance.now();
+  const startAngle = currentAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function frame(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const angle = startAngle + (targetAngle - startAngle) * easeOut(progress);
+    currentAngle = angle;
+    drawWheel(angle);
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      spinning = false;
+      document.getElementById('spinBtn').classList.remove('spinning');
+
+      // determine landed segment
+      const normalised = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      // pointer is at top (angle 0 = 12 o'clock, shifted by -PI/2)
+      const pointerAngle = (Math.PI * 2 - normalised + Math.PI * 2) % (Math.PI * 2);
+      currentSeg = Math.floor(pointerAngle / ARC) % N;
+
+      isDouble = (currentSeg === 5);
+      showQuestion(currentSeg);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ══════════════════════════════════════════
+// QUESTION
+// ══════════════════════════════════════════
+function getQuestion(segIdx) {
+  const pool = QUESTIONS[segIdx];
+  if (!usedQs[segIdx]) usedQs[segIdx] = [];
+  const available = pool.map((_,i)=>i).filter(i => !usedQs[segIdx].includes(i));
+  if (available.length === 0) { usedQs[segIdx] = []; return getQuestion(segIdx); }
+  const idx = available[Math.floor(Math.random() * available.length)];
+  usedQs[segIdx].push(idx);
+  return pool[idx];
+}
+
+function showQuestion(segIdx) {
+  const seg = SEGMENTS[segIdx];
+  const q = getQuestion(segIdx);
+  rounds++;
+  updateStats();
+
+  const colMap = [
+    '#a8f0c6','#fff3b0','#b3d9ff','#e8c5ff',
+    '#ffd0b0','#ffe0e0','#a8f0c6','#ffffa0'
+  ];
+
+  let html = `
+    <div class="q-category" style="background:${seg.color}22;color:${colMap[segIdx]};border:1px solid ${seg.color}55">
+      ${seg.label.replace('\n',' ')}
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div class="options">
+  `;
+  q.opts.forEach((opt, i) => {
+    html += `<button class="opt" id="opt${i}" onclick="answer(${i},${q.ans},'${encodeURIComponent(q.exp)}')">${opt}</button>`;
+  });
+  html += `</div>
+    <div class="q-feedback" id="feedback"></div>
+    <button class="btn-next" id="btnNext" onclick="nextRound()">Siguiente pregunta →</button>
+  `;
+  if (isDouble) html = `<div style="text-align:center;padding:8px;background:rgba(255,77,109,.15);border-radius:10px;margin-bottom:12px;font-size:.82rem;color:#ff8fa3;font-weight:700">⭐ ¡COMODÍN! Los puntos se duplican esta ronda</div>` + html;
+
+  document.getElementById('qbox').innerHTML = html;
+  document.getElementById('mainSpin').disabled = true;
+}
+
+function answer(chosen, correct_idx, expEnc) {
+  if (answered) return;
+  answered = true;
+  const exp = decodeURIComponent(expEnc);
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(b => b.disabled = true);
+  opts[correct_idx].classList.add('correct');
+
+  const fb = document.getElementById('feedback');
+  const next = document.getElementById('btnNext');
+
+  if (chosen === correct_idx) {
+    opts[chosen].classList.add('correct');
+    correct++;
+    fb.className = 'q-feedback show ok';
+    fb.innerHTML = `✅ <strong>¡Correcto!</strong> ${exp}`;
+    showOverlay(true, isDouble);
+  } else {
+    opts[chosen].classList.add('wrong');
+    fb.className = 'q-feedback show fail';
+    fb.innerHTML = `❌ <strong>Incorrecto.</strong> ${exp}`;
+    showOverlay(false, false);
+  }
+  next.classList.add('show');
+  updateStats();
+}
+
+function showOverlay(ok, dbl) {
+  const o = document.getElementById('overlay');
+  document.getElementById('resEmoji').textContent = ok ? (dbl ? '🌟' : '🎉') : '💡';
+  document.getElementById('resTitle').textContent = ok ? (dbl ? '¡DOBLE PUNTOS!' : '¡Correcto!') : 'Casi...';
+  document.getElementById('resSub').textContent = ok
+    ? (dbl ? 'Ronda comodín — suma el doble al equipo ganador' : 'Excelente conocimiento ambiental')
+    : 'Revisen el contenido y sigan participando';
+  document.getElementById('resPts').textContent = ok ? (dbl ? '+2 puntos' : '+1 punto') : 'Sin puntos';
+  document.getElementById('resPts').style.color = ok ? 'var(--acento)' : 'rgba(255,255,255,.3)';
+  o.classList.add('show');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function nextRound() {
+  document.getElementById('mainSpin').disabled = false;
+  document.getElementById('qbox').innerHTML = `<p class="q-placeholder">Gira la ruleta para<br>revelar la siguiente<br>categoría 🎲</p>`;
+}
+
+// ══════════════════════════════════════════
+// TEAMS
+// ══════════════════════════════════════════
+function addPts(team, delta) {
+  teamPts[team] = Math.max(0, teamPts[team] + delta);
+  document.getElementById(`pts-${team}`).innerHTML = `${teamPts[team]} <span>pts</span>`;
+}
+
+function updateStats() {
+  document.getElementById('totalRounds').textContent = rounds;
+  document.getElementById('totalCorrect').textContent = correct;
+  document.getElementById('totalPct').textContent = rounds > 0 ? Math.round(correct/rounds*100) + '%' : '—';
+}
+</script>
+</body>
+</html>
